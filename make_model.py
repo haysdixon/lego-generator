@@ -97,7 +97,7 @@ with cf.ThreadPoolExecutor(a.jobs) as ex:
             print(f'  seed {seed}: failed ({info})')
             continue
         print(f"  seed {seed}: {s['pieces']} pieces, {s['dropped']} loose (removed), {s['missing']} cells unfilled, "
-              f"{s['wrongcolour']} off-colour")
+              f"{s['wrongcolour']} off-colour, {s['edits']} cells changed")
         results.append((seed, s, info))
 if not results:
     sys.exit('every seed failed; see the logs in ' + runs)

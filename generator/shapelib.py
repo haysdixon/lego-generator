@@ -3,7 +3,8 @@
 Grid: cells are 20 LDU (1 stud) in x and z, 8 LDU (1 plate) in y. Shape files work in LDU before scaling
 (front = -Z, Y up from 0) and may set GRID = (NX, NZ, NY) at the top to change the grid size (default 18, 18, 48).
 Helpers available to shape files: np, os, X, Y, Z, ell(center, radii), sell(center, radii, p) (superellipsoid,
-p=2 is an ellipsoid, bigger p is boxier), box(lo, hi), SC, snap(v) (raw x/z onto a stud boundary) and studs(n)."""
+p=2 is an ellipsoid, bigger p is boxier), box(lo, hi), SC, snap(v) (raw x/z onto a stud boundary), studs(n) and
+SHAPE_DIR (the shape file's folder, for shapes that load a saved voxel file, as import_model.py writes)."""
 import os, re
 import numpy as np
 
@@ -32,7 +33,8 @@ def load(path, SC):
         """n studs expressed in raw (pre-scale) LDU"""
         return n * 20 / SC
 
-    ns = dict(np=np, os=os, X=X, Y=Y, Z=Z, SC=SC, ell=ell, sell=sell, box=box, snap=snap, studs=studs)
+    ns = dict(np=np, os=os, X=X, Y=Y, Z=Z, SC=SC, ell=ell, sell=sell, box=box, snap=snap, studs=studs,
+              SHAPE_DIR=os.path.dirname(os.path.abspath(path)))
     exec(src, ns)
     solid, col = ns['solid'], ns['col']
     # COLMAP="29=5,19=84": use a set's own colours for ones it lacks (applied to the colour grid and KEYC)

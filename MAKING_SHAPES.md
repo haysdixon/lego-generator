@@ -2,11 +2,14 @@
 
 You don't need to know how to program. A **shape file** is a short text file that describes what to build, such as how long the body is or what colour the head is. The generator turns it into real LEGO pieces from a set you own.
 
-There are three ways to make a shape file. Pick whichever sounds easiest:
+There are four ways to make a shape file. Pick whichever sounds easiest:
 
-1. **[Fill in the numbers](#way-1-fill-in-the-numbers-easiest)**: change sizes and colour names in a ready-made animal. No AI or programming needed.
+1. **[Fill in the numbers](#way-1-fill-in-the-numbers-easiest)**: change sizes and colour names in a ready-made template: an animal, a mug, a heart, a house, a car, or a word in block letters. No AI or programming needed.
 2. **[Ask an AI chatbot](#way-2-ask-an-ai-chatbot)** such as ChatGPT or Claude to write one for you.
 3. **[Let an AI coding tool do everything](#way-3-let-an-ai-coding-tool-do-everything)**: it writes the shape, builds it, looks at the result and fixes it.
+4. **[Start from a 3D model](#way-4-start-from-a-3d-model)**: turn an `.stl`, `.obj` or MagicaVoxel `.vox` file into a shape.
+
+Before you start, read **[what builds well](#what-builds-well-and-what-doesnt)**. It saves a lot of trial and error.
 
 Start with [one-time setup](#one-time-setup) whichever way you choose.
 
@@ -81,7 +84,28 @@ On the set's Rebrickable page, check which **colours** it has a lot of. Your mod
    - `my_dog.ldr`: the model file, which opens in LeoCAD or BrickLink Studio.
    - `my_dog-instructions/instructions.html`: the build instructions.
 
-Want something other than a four-legged animal? Use Way 2 or 3, or copy one of the other shapes in the folder (`pig.py`, `highland.py`, `sauropod.py`, `turtle.py`) and change its numbers.
+### More templates
+
+Each of these works the same way: copy it, change the settings at the top, preview, and build with `--scale 1 --bricks-only`. Each one builds cleanly from one 11045 box with its default settings: no loose pieces, nothing unfilled, and every colour right.
+
+| Template | Makes | Settings to try | Pieces from 11045 |
+|---|---|---|---|
+| [`my_animal.py`](shapes/my_animal.py) | a four-legged animal | body, legs, head, snout, ears, tail | 48 |
+| [`my_mug.py`](shapes/my_mug.py) | a mug with a handle, and a drink inside | `ACROSS`, `HEIGHT`, `HANDLE`, `COFFEE`, `STRIPE_COLOUR` | 64 |
+| [`my_heart.py`](shapes/my_heart.py) | a heart standing on a little stand | `WIDTH`, `HEIGHT`, `THICKNESS`, `OUTLINE` | 33 |
+| [`my_house.py`](shapes/my_house.py) | a house with a stepped roof, door, windows and chimney | `LENGTH`, `DEPTH`, `WALL_HEIGHT`, `EAVES`, `CHIMNEY` | 139 |
+| [`my_car.py`](shapes/my_car.py) | a car, van or pickup (the wheels are black blocks, because 11045 has no wheels) | `LENGTH`, `HOOD_LENGTH`, `CABIN_LENGTH`, `LIGHTS` | 64 |
+| [`my_letters.py`](shapes/my_letters.py) | a word in block letters on a base | `TEXT`, `LETTER_COLOURS`, `THICKNESS` | 94 for `HELLO` |
+
+You can also change settings without editing the file, using `--var`. For example, a name in red and blue letters:
+
+```
+python make_model.py 11045-1 shapes/my_letters.py out/name.ldr --scale 1 --bricks-only --render --var TEXT=SAM --var "LETTER_COLOURS=red, dark azure"
+```
+
+Put quotes around a value with spaces, such as `--var "TEXT=HI MOM"`. The letters template takes A–Z, 0–9 and spaces. In 11045, give each colour **2 letters at most**: letters use lots of small bricks, and each colour has only a few. A whole word in one colour runs out, and the summary shows many **cells changed**.
+
+Want something else? Use Way 2, 3 or 4, or copy one of the example shapes (`pig.py`, `highland.py`, `sauropod.py`, `turtle.py`) and change its numbers.
 
 ---
 
@@ -111,6 +135,7 @@ Chatbots like ChatGPT, Claude or Gemini can write shape files well if you give t
 >   - Give the body straight sides. A layer that bulges out past the layers above and below it falls off.
 >   - Make legs at least 2x2 studs, and run them one brick up into the body.
 >   - Overlap joined parts (head and body, legs and body) by at least 2 studs.
+>   - Build from the bottom up. Every part should sit on something in the layer below it. Nothing should float, or hang from the layer above.
 > - Put a short comment at the top listing any settings I can change.
 >
 > Reply with only the file contents.
@@ -142,6 +167,65 @@ The folder includes an instruction file for them, [AGENTS.md](AGENTS.md); Claude
 
 ---
 
+## Way 4: start from a 3D model
+
+If you have a 3D model, for example from a 3D-printing site or one you made yourself, `import_model.py` turns it into a shape file. It reads:
+
+- **`.stl`**: the usual 3D-printing format. It has no colours, so pick one with `--colour`.
+- **`.obj`**: keeps the colours from its `.mtl` materials file. Keep the `.mtl` next to the `.obj`.
+- **`.vox`**: from [MagicaVoxel](https://ephtracy.github.io/), a free program for drawing in cubes. It keeps your colours. You're already drawing in blocks, so this is the easiest way to get a model that builds well.
+
+```
+python import_model.py duck.stl --studs 14 --colour golden
+python import_model.py robot.vox --studs 12 --set 11045-1
+```
+
+- `--studs`: how long the model is, seen from above, in studs. Start small (10–16): every extra stud adds a lot of pieces.
+- `--set`: match the model's colours to the colours that set has. Without it, they match common LEGO colours.
+- `--colour`: paint the whole model one colour.
+- `--turn 90` (or 180, 270): turn the model so it faces the front.
+- `--up y`: use this if the model comes out lying on its side.
+
+It writes two files into `shapes/`: `NAME.py` and `NAME.npz`. Keep them together. Then preview and build as usual:
+
+```
+python preview_shape.py shapes/duck.py --bricks-only
+python make_model.py 11045-1 shapes/duck.py out/duck.ldr --scale 1 --bricks-only --render
+```
+
+To try other colours without importing again, use `--var COLOUR=red`. To change one colour, use `--var SWAP=71=15`, which turns light grey (71) into white (15).
+
+The importer copies the model's shape exactly, overhangs and all. Check the next section first: a model with thin arms, or a wide top over a narrow bottom, will lose pieces. Smooth, chunky models such as a duck, a snowman, a whale or a rocket work best.
+
+---
+
+## What builds well (and what doesn't)
+
+The generator builds the way you'd stack bricks: layer by layer, from the table up. A brick only holds on by clicking onto the bricks **directly above or below** it. Nothing holds from the side. That one fact explains almost everything below.
+
+**Builds well**
+
+- **Solid, chunky shapes** at least 4 studs wide: animals, buildings, vehicles, fruit, block letters.
+- **Straight walls**: each layer about the same size as the one below it, or a little smaller, like a stepped roof.
+- **Thick walls** for hollow things. A mug with walls 2 studs thick builds well.
+- **Colour patterns on the surface**, such as stripes, patches, windows painted on a wall, or eyes. These are much easier than shapes that stick out.
+- **A base that ties things together.** If a model touches the table in several places (letters, a heart's tip), stand it on a base 2 bricks tall.
+
+**Struggles**
+
+- **Overhangs.** A layer that sticks out more than a stud or so past the layer below has nothing to sit on. A mushroom's cap or outstretched arms come out as loose pieces. Put things *on top of* something instead, or fill in underneath.
+- **Handles, loops and arches.** These only work if both ends click onto bricks above or below them, like the mug's handle. A loop held only at its sides falls off.
+- **Bulges.** A layer wider than the ones above and below it (like the middle of a ball) loses its outer ring. Make things round only in the view from above, and keep the sides straight.
+- **Tiny details** narrower than 2 studs or shorter than a brick. They disappear or fall off.
+- **Thin walls.** An empty box or a cup with walls 1 stud thick falls apart. Make walls 2 studs thick.
+- **Moving or special parts**: wheels that turn, hinges, doors that open, clear windows. The generator only uses plain bricks, plates and some curved bricks. Paint wheels and windows on as colours instead.
+- **Thin diagonal lines.** Bricks that only touch at a corner don't hold together. Draw diagonals as steps that overlap by a stud, as the letters template does.
+- **Lots of one colour.** The set's count of each colour is a hard limit. A big model in one colour can run the box dry, and the rest comes out in the wrong colour.
+
+**When a piece comes out loose**, the build log says which layer it was on (see [Reading the results](#reading-the-results)). Usually the fix is to give that part something underneath it, make it wider, or join it to the main body by at least 2 studs.
+
+---
+
 ## Reading the results
 
 When you run `make_model.py`, it builds several versions (called seeds) and keeps the best one. Each line of its summary tells you:
@@ -152,6 +236,7 @@ When you run `make_model.py`, it builds several versions (called seeds) and keep
 | **loose (removed)** | Pieces that weren't clicked onto anything, which were left out | 0 |
 | **cells unfilled** | Parts of the shape it ran out of bricks for | 0 |
 | **off-colour** | Pieces that show in the wrong colour because the set ran short | 0 |
+| **cells changed** | Bits of the shape it had to trim or repaint to make the bricks fit, usually because the set ran short of a piece | 0, or a few |
 
 ## When something goes wrong
 
@@ -163,7 +248,9 @@ When you run `make_model.py`, it builds several versions (called seeds) and keep
 | Lots of **cells unfilled** | The model is too big for the set. Use a smaller `--scale` (try 0.8) or smaller sizes. |
 | Lots of **off-colour** pieces | The set doesn't have enough of that colour. Pick a colour the set has more of. |
 | The model looks lumpy or wrong | Try more seeds: add `--seeds 1-8`. Or change the shape a little and preview again. |
-| "unknown colour" | Use a name from the `COLOURS` list in `my_animal.py`. |
+| "unknown colour" | Use a name from the `COLOURS` list near the bottom of the template. |
+| An imported model is lying on its side | Import it again with `--up y` (or `--up z`). |
+| An imported model is a solid lump, or is missing parts | The 3D model has holes in its surface. Repair it first (3D-printing slicers have a "repair" tool), or redraw it in MagicaVoxel. |
 | The model is too small or blocky | Make it bigger with `--scale`, or use bigger sizes. Small features need room. |
 
 ## Words used here
@@ -171,5 +258,5 @@ When you run `make_model.py`, it builds several versions (called seeds) and keep
 - **Stud**: one bump on top of a LEGO brick. Also used as a unit of width: a 2x4 brick is 2 studs by 4 studs.
 - **Brick / plate**: a normal brick is 3 plates tall. Plates are the thin pieces.
 - **Set number**: the number on the LEGO box, as written on [Rebrickable](https://rebrickable.com), such as `11045-1`.
-- **Scale**: how big the model is built. Use 1 with `my_animal.py`; other shapes list a good scale in the README.
+- **Scale**: how big the model is built. Use 1 with the `my_*.py` templates and imported models; other shapes list a good scale in the README.
 - **Seed**: a different random attempt at the same model. More seeds take longer, but give a better chance of a clean build.

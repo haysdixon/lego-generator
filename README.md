@@ -23,6 +23,7 @@ It can also build **several models from one box**, so they don't fight over the 
 | Highland cow, Holstein cow, long-neck dinosaur, potbelly pig: **all four from one box** | 11045 Creative Colorful Bricks | 113 + 125 + 78 + 88 = 404 of the box's 820 | [11045-animals](docs/examples/11045-animals/) |
 | Turtle | 71426 Piranha Plant | 87 | [turtle-71426](docs/examples/turtle-71426/) |
 | Penguin | 21349 Tuxedo Cat | 292 | [penguin-21349](docs/examples/penguin-21349/) |
+| Fill-in templates: animal, mug, heart, house, car, block letters | 11045 Creative Colorful Bricks | 48, 64, 33, 139, 64 and 94 (each from its own box) | [templates-11045](docs/examples/templates-11045/) |
 
 Each example folder has the `.ldr` model, a render, and an `*-instructions/instructions.html` page you can open in a browser or print.
 
@@ -87,10 +88,22 @@ This ranks LEGO sets by whether their parts can cover the shape in the right col
 
 ## Make your own model
 
-**New to this? Read [MAKING_SHAPES.md](MAKING_SHAPES.md).** It's a step-by-step guide for non-programmers with three ways to go:
-1. Fill in the numbers in a ready-made animal template ([shapes/my_animal.py](shapes/my_animal.py)).
+**New to this? Read [MAKING_SHAPES.md](MAKING_SHAPES.md).** It's a step-by-step guide for non-programmers with four ways to go:
+1. Fill in the numbers in a ready-made template:
+   - [an animal](shapes/my_animal.py)
+   - [a mug](shapes/my_mug.py)
+   - [a heart](shapes/my_heart.py)
+   - [a house](shapes/my_house.py)
+   - [a car](shapes/my_car.py)
+   - [a word in block letters](shapes/my_letters.py)
 2. Ask an AI chatbot, using a prompt you copy and paste.
 3. Let an AI coding tool do everything. [AGENTS.md](AGENTS.md) tells it how.
+4. Turn a 3D model (`.stl`, `.obj` or MagicaVoxel `.vox`) into a shape:
+   ```
+   python import_model.py duck.stl --studs 14 --colour golden
+   ```
+
+The guide also has a section on [what builds well and what doesn't](MAKING_SHAPES.md#what-builds-well-and-what-doesnt).
 
 Preview a shape in seconds before building it:
 
@@ -113,9 +126,12 @@ Code is in [generator/](generator/):
 | `instructions.py` | build instructions |
 | `find_sets.py` | set search |
 
+Next to them, in the main folder: `make_model.py` runs everything, `preview_shape.py` draws quick previews, and `import_model.py` turns 3D models into shapes.
+
 ## Known limits
 
 - **Parts:** it only uses plain bricks, plates, tiles, and curved or sloped bricks. Technic, hinges, round bricks and similar special parts are skipped.
+- **Shapes:** overhangs, loops, bulges and tiny details tend to come out as loose pieces. See [what builds well](MAKING_SHAPES.md#what-builds-well-and-what-doesnt).
 - **Colours:** the `.ldr` files use Rebrickable colour ids as LDraw colour codes. These match for common colours but not all of them.
 - **Old examples:** the penguin was made with an earlier, plates-only version of the generator that isn't included here.
 - **Speed:** a model takes about a minute per seed, and the seeds run in parallel.

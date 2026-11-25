@@ -16,10 +16,18 @@ This repo builds new LEGO models from one set's parts. Users are often non-techn
    - If the set is mostly bricks with few plates (for example, the 11045 Classic boxes), use `--bricks-only` everywhere.
 2. **Write the shape** in `shapes/NAME.py`.
    - For a four-legged animal, prefer copying `shapes/my_animal.py` and changing its settings. It is built to hold together.
+   - The other fill-in templates are built the same way, and each builds clean from 11045-1 at `--scale 1 --bricks-only`:
+     - `my_mug.py`: a mug with a handle and a drink.
+     - `my_heart.py`: a standing heart.
+     - `my_house.py`: a house.
+     - `my_car.py`: a car, van or pickup.
+     - `my_letters.py`: a word or name. Set it with `--var TEXT=...`; it takes A-Z, 0-9 and spaces.
+   - If the user has a 3D model (`.stl`, `.obj` or MagicaVoxel `.vox`), run `python import_model.py MODEL --studs N [--set SET] [--colour C]`. It writes `shapes/NAME.py` and `shapes/NAME.npz`. Start with N = 10-16, and check the overhang note it prints.
    - Otherwise, start from the closest example: `pig.py`, `highland.py`, `holstein.py`, `sauropod.py` or `turtle.py`.
 3. **Preview** with `python preview_shape.py shapes/NAME.py [--scale S] [--bricks-only]` and look at the PNG yourself. It takes seconds. Fix proportions here before building.
 4. **Build:** `python make_model.py SET shapes/NAME.py out/NAME.ldr --scale S [--bricks-only] --render`. Read the per-seed summary, then look at `out/NAME.png`.
-5. **Iterate until the best seed has 0 loose, 0 unfilled and 0 off-colour,** and the render clearly reads as the animal. Then rerun with `--instructions`.
+5. **Iterate until the best seed has 0 loose, 0 unfilled and 0 off-colour, and few or no cells changed,** and the render clearly reads as the animal. Then rerun with `--instructions`.
+   - "Cells changed" (`edits`) are cells the generator trimmed or recoloured when no brick fitted. A model can show 0 unfilled and still have lost pieces of its shape. Look at the render whenever it isn't 0.
 6. **Hand back:** the `.png`, `.ldr` and `NAME-instructions/instructions.html` paths, the piece count, and the exact command used.
 
 ## Shape file contract
@@ -31,6 +39,7 @@ This repo builds new LEGO models from one set's parts. Users are often non-techn
   - `SC` (the scale).
   - `ell(c, r)`, `sell(c, r, p)` and `box(lo, hi)`.
   - `studs(n)` (raw units for n studs) and `snap(v)` (onto a stud boundary).
+  - `SHAPE_DIR`, the shape file's folder, for loading a saved voxel file.
 - Raw units are LDraw units before scaling: 20 per stud, 8 per plate, 24 per brick. The grid sees `raw * SC`. So write sizes as `studs(n)` and `B = 24 / SC` to keep them right at any scale.
 - Y = 0 is the table and +Y is up. Pick a front (−X or −Z) and say so in a comment.
 - Expose tweakables as env settings, read with `os.environ.get('NAME', default)`. Users set them with `--var NAME=VALUE`.
@@ -47,6 +56,14 @@ These come from building the examples. Breaking them shows up as "loose (removed
 - **Whole bricks** for brick-only sets. Size features in multiples of `B = 24 / SC` and align them to brick bands: `band(n) = (Y > n*B) & (Y < (n+1)*B)`.
 - **Minimum size.** Make features at least 2 studs wide. Legs should be 2x2 studs, snapped with `snap()`, and should reach one brick into the body.
 - **Overlap joined parts.** Overlap head and body, or neck and body, by at least 2 studs in plan, so bricks span the join.
+- **Support from below.** The generator places each layer looking only at the layer below it. Every run of cells in a layer should sit on at least one cell in the layer below. Parts that only touch the layer above often come out loose.
+- **Spans and runs.**
+  - A crossbar that joins two uprights must be at most 4 studs long, so one 2x4 or 1x4 brick bridges both. 11045 has only four 2x6 bricks per colour.
+  - 11045 has no 3-stud bricks. In a 3-stud run, an end cell with nothing above or below it falls off. Use runs of 2 or 4.
+  - See the font in `my_letters.py`.
+- **Bases.** A one-brick base under a narrower model loses its outer bricks, because nothing sits on them. Use a base 2 bricks tall (it bonds itself), or make the model's bottom cover the base (see the heart's tip).
+- **Single-stud details** such as lamps or eyes shouldn't sit on a corner. That leaves a 1x1 column that holds onto nothing. Move them one stud in (see `my_car.py`).
+- **See-through colours** in 11045 are only six 1x1 bricks per colour. The 1x2 without a bottom tube is filtered out. Use an opaque colour for windows larger than that.
 - **Colours.** The set's colour counts are a hard limit.
   - A visible colour the set lacks becomes off-colour. Use `--colmap A=B` or choose another colour.
   - Big areas of one colour can run the set dry. Hidden interior cells can be any colour: the generator fills the inside with spare pieces.
