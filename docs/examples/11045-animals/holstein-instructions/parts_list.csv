@@ -1,0 +1,28 @@
+part,color,qty,description
+3003,White,20,Brick 2 x 2
+3004,White,18,Brick 1 x 2
+3005,White,14,Brick 1 x 1
+3004,Black,8,Brick 1 x 2
+3001,Black,7,Brick 2 x 4
+3010,White,7,Brick 1 x 4
+3001,White,6,Brick 2 x 4
+3005,Medium Nougat,6,Brick 1 x 1
+3003,Medium Nougat,5,Brick 2 x 2
+3005,Black,5,Brick 1 x 1
+3010,Black,5,Brick 1 x 4
+2456,Black,4,Brick 2 x 6
+2456,White,3,Brick 2 x 6
+2456,Lime,2,Brick 2 x 6
+2456,Dark Azure,2,Brick 2 x 6
+3001,Medium Nougat,2,Brick 2 x 4
+2456,Dark Pink,1,Brick 2 x 6
+3001,Dark Pink,1,Brick 2 x 4
+3003,Black,1,Brick 2 x 2
+3003,Dark Azure,1,Brick 2 x 2
+3004,Dark Pink,1,Brick 1 x 2
+3004,Lime,1,Brick 1 x 2
+3005,Red,1,Brick 1 x 1
+3005,Dark Pink,1,Brick 1 x 1
+3005,Dark Azure,1,Brick 1 x 1
+3010,Dark Pink,1,Brick 1 x 4
+3010,Lime,1,Brick 1 x 4

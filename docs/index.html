@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LEGO Remake: new models from the bricks you already have</title>
+<meta name="description" content="Free build instructions for animals made only from the parts of one LEGO set, plus the open-source generator that designs them.">
+<style>
+  :root { --ink:#1f2328; --muted:#5d646d; --line:#e3e1da; --bg:#faf9f5; --card:#fff; --accent:#b3541e; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink); background:var(--bg); }
+  main { max-width:1040px; margin:0 auto; padding:48px 20px 64px; }
+  h1 { font-size:clamp(28px,4vw,40px); line-height:1.15; margin:0 0 10px; letter-spacing:-.01em; }
+  .lede { font-size:18px; color:var(--muted); max-width:46em; margin:0 0 28px; }
+  h2 { font-size:22px; margin:44px 0 6px; }
+  .sub { color:var(--muted); margin:0 0 16px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; display:flex; flex-direction:column; }
+  .card img { width:100%; aspect-ratio:3/1; object-fit:contain; background:#f5f4f0; border-bottom:1px solid var(--line); }
+  .card .body { padding:14px 16px 16px; display:flex; flex-direction:column; gap:6px; flex:1; }
+  .card h3 { margin:0; font-size:17px; }
+  .meta { color:var(--muted); font-size:14px; margin:0; }
+  .links { margin-top:auto; padding-top:8px; display:flex; gap:14px; font-size:14px; }
+  a { color:var(--accent); }
+  .cta { display:inline-block; margin-top:6px; padding:10px 16px; border-radius:8px; background:var(--ink); color:#fff; text-decoration:none; font-weight:600; }
+  ol { padding-left:1.2em; } li { margin:4px 0; }
+  footer { margin-top:56px; padding-top:18px; border-top:1px solid var(--line); color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>New LEGO models from the bricks you already have</h1>
+  <p class="lede">Each model here is built using <em>only</em> the parts of one LEGO set. The instructions are free. The generator that designs these models is open source, so you can make your own from any set.</p>
+  <a class="cta" id="repo" href="#get-the-generator">Get the generator</a>
+
+  <h2>Four animals from one 11045 box</h2>
+  <p class="sub">LEGO 11045 Creative Colorful Bricks (820 pieces). All four models build from a single box at the same time, using 404 bricks.</p>
+  <div class="grid">
+    <div class="card"><img src="examples/11045-animals/highland.png" alt="Highland cow"><div class="body"><h3>Highland cow</h3><p class="meta">113 bricks · 12 steps</p><div class="links"><a href="examples/11045-animals/highland-instructions/instructions.html">Instructions</a><a href="examples/11045-animals/highland.ldr" download>Model (.ldr)</a></div></div></div>
+    <div class="card"><img src="examples/11045-animals/holstein.png" alt="Holstein cow"><div class="body"><h3>Holstein cow</h3><p class="meta">125 bricks · 12 steps</p><div class="links"><a href="examples/11045-animals/holstein-instructions/instructions.html">Instructions</a><a href="examples/11045-animals/holstein.ldr" download>Model (.ldr)</a></div></div></div>
+    <div class="card"><img src="examples/11045-animals/longneck.png" alt="Long-neck dinosaur"><div class="body"><h3>Long-neck dinosaur</h3><p class="meta">78 bricks · 14 steps</p><div class="links"><a href="examples/11045-animals/longneck-instructions/instructions.html">Instructions</a><a href="examples/11045-animals/longneck.ldr" download>Model (.ldr)</a></div></div></div>
+    <div class="card"><img src="examples/11045-animals/pig.png" alt="Potbelly pig"><div class="body"><h3>Potbelly pig</h3><p class="meta">88 bricks · 7 steps</p><div class="links"><a href="examples/11045-animals/pig-instructions/instructions.html">Instructions</a><a href="examples/11045-animals/pig.ldr" download>Model (.ldr)</a></div></div></div>
+  </div>
+
+  <h2>More remakes</h2>
+  <p class="sub">The same idea with other sets.</p>
+  <div class="grid">
+    <div class="card"><img src="examples/turtle-71426/turtle.png" alt="Turtle"><div class="body"><h3>Turtle</h3><p class="meta">From 71426 Piranha Plant · 87 pieces · 9 steps</p><div class="links"><a href="examples/turtle-71426/turtle-instructions/instructions.html">Instructions</a><a href="examples/turtle-71426/turtle.ldr" download>Model (.ldr)</a></div></div></div>
+    <div class="card"><img src="examples/penguin-21349/penguin.png" alt="Penguin"><div class="body"><h3>Penguin</h3><p class="meta">From 21349 Tuxedo Cat · 292 pieces · 36 steps</p><div class="links"><a href="examples/penguin-21349/penguin-instructions/instructions.html">Instructions</a><a href="examples/penguin-21349/penguin-viewer.html">3D viewer</a><a href="examples/penguin-21349/penguin.ldr" download>Model (.ldr)</a></div></div></div>
+  </div>
+
+  <h2 id="get-the-generator">Make your own</h2>
+  <ol>
+    <li>Get the code from this project's GitHub repository: <a id="repo2" href="#">the source repository</a>.</li>
+    <li>Run <code>pip install -r requirements.txt</code>, then <code>python get_data.py</code>. This downloads the free parts data once.</li>
+    <li>Pick a set you own and a shape file, then run <code>make_model.py</code>. The README walks through it.</li>
+  </ol>
+  <p class="sub">To open the .ldr models yourself, use <a href="https://www.leocad.org">LeoCAD</a> or <a href="https://www.bricklink.com/v3/studio/download.page">BrickLink Studio</a> (both free).</p>
+
+  <footer>
+    The idea, direction and models are by Hays Dixon. The code, shapes and instructions were written by Claude Opus 5.5 (Anthropic).
+    Set inventories come from <a href="https://rebrickable.com">Rebrickable</a>, and part geometry from <a href="https://www.ldraw.org">LDraw</a>.
+    LEGO® is a trademark of the LEGO Group, which does not sponsor, authorize or endorse this site.
+  </footer>
+</main>
+<script>
+  // On GitHub Pages (user.github.io/repo/) link straight to the repository; elsewhere keep the in-page links.
+  (function () {
+    var h = location.hostname, parts = location.pathname.split('/').filter(Boolean);
+    if (/\.github\.io$/.test(h)) {
+      var url = 'https://github.com/' + h.split('.')[0] + '/' + (parts[0] || '');
+      document.getElementById('repo').href = url;
+      document.getElementById('repo2').href = url; document.getElementById('repo2').textContent = url.replace('https://', '');
+    } else {
+      document.getElementById('repo2').href = '../README.md';
+    }
+  })();
+</script>
+</body>
+</html>

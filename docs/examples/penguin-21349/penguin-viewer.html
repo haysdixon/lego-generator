@@ -1,0 +1,189 @@
+<title>Tuxedo Cat Penguin</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: one-screen viewer. Slim header, the model fills the middle, controls sit under it like a build-instructions footer. */
+:root{
+  --bg:#f3f4f6; --panel:#ffffff; --fg:#1b1f24; --muted:#5d6671; --line:#d9dde3;
+  --accent:#e3b505; --accent-ink:#1b1f24; --stage:#e9ecf0;
+  --display:"Space Grotesk",system-ui,sans-serif; --text:"Inter",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14171b; --panel:#1c2026; --fg:#e8ebef; --muted:#9aa4af; --line:#2d333b;
+  --accent:#f2c522; --accent-ink:#14171b; --stage:#1a1e23; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14171b; --panel:#1c2026; --fg:#e8ebef; --muted:#9aa4af; --line:#2d333b;
+  --accent:#f2c522; --accent-ink:#14171b; --stage:#1a1e23; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--text);display:flex;flex-direction:column}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{padding-block:14px 10px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
+h1{font-family:var(--display);font-weight:700;font-size:1.35rem;margin:0;text-wrap:balance}
+.facts{color:var(--muted);font-size:.85rem;font-variant-numeric:tabular-nums}
+#stage{flex:1;min-height:320px;position:relative;background:var(--stage);border-block:1px solid var(--line);touch-action:none}
+#stage canvas{display:block;width:100%;height:100%}
+#status{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:.9rem;pointer-events:none}
+.hint{position:absolute;left:12px;bottom:10px;font-size:.75rem;color:var(--muted);pointer-events:none}
+footer{padding-block:12px 14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;background:var(--panel)}
+.steps{display:flex;align-items:center;gap:10px;flex:1 1 260px;min-width:0}
+.steps label{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+#step{flex:1;min-width:0;accent-color:var(--accent)}
+#stepOut{font-family:var(--display);font-weight:500;font-variant-numeric:tabular-nums;min-width:9.5em;font-size:.9rem}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:500 .85rem var(--text);color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button:focus-visible,#step:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+
+<header class="wrap">
+  <h1>Tuxedo Cat Penguin</h1>
+  <span class="facts">292 pieces from set 21349 · 36 steps · about 115 mm tall</span>
+</header>
+
+<div id="stage">
+  <div id="status">Loading parts…</div>
+  <div class="hint">Drag to orbit · scroll or pinch to zoom · right-drag to pan</div>
+</div>
+
+<footer class="wrap">
+  <div class="steps">
+    <label for="step">Build step</label>
+    <input id="step" type="range" min="1" max="36" value="36">
+    <output id="stepOut" for="step">Step 36 of 36</output>
+  </div>
+  <div class="btns">
+    <button id="spin" type="button" aria-pressed="true">Auto-rotate</button>
+    <button id="cut" type="button" aria-pressed="false">Cut in half</button>
+    <button id="reset" type="button">Reset view</button>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(async function(){
+  const stage=document.getElementById('stage'), status=document.getElementById('status');
+  const stepIn=document.getElementById('step'), stepOut=document.getElementById('stepOut');
+  const spinBtn=document.getElementById('spin'), cutBtn=document.getElementById('cut'), resetBtn=document.getElementById('reset');
+  if(!window.THREE){status.textContent='The 3D library did not load. Check your connection and reload.';return;}
+
+  let recs;
+  try{ recs=await (await fetch('penguin.json')).json(); }
+  catch(e){ status.textContent='Could not load the model data. Reload the page to try again.'; return; }
+  const colors=recs.find(r=>r.kind==='colors').colors;
+  const parts={}; recs.filter(r=>r.kind==='part').forEach(p=>parts[p.id]=p);
+  const pieces=recs.filter(r=>r.kind==='piece');
+  const maxStep=Math.max(...pieces.map(p=>p.step))+1;
+  stepIn.max=maxStep; stepIn.value=maxStep;
+
+  const renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.localClippingEnabled=true;
+  renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.outputEncoding=THREE.sRGBEncoding;
+  stage.appendChild(renderer.domElement);
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(35,1,1,20000);
+
+  scene.add(new THREE.HemisphereLight(0xffffff,0x8a8f96,0.75));
+  const key=new THREE.DirectionalLight(0xffffff,0.75);
+  key.castShadow=true; key.shadow.mapSize.set(2048,2048);
+  const fill=new THREE.DirectionalLight(0xffffff,0.3);
+  scene.add(key,fill);
+
+  const cutPlane=new THREE.Plane(new THREE.Vector3(0,0,1),0);
+  const clip=[];
+  const model=new THREE.Group(); model.scale.set(1,-1,1);   // LDraw has +Y pointing down
+  scene.add(model);
+
+  const col=c=>new THREE.Color(colors[c]?colors[c].hex:'#888888').convertSRGBToLinear();
+  const mats={};
+  function mat(c){
+    if(!mats[c]) mats[c]=new THREE.MeshStandardMaterial({color:col(c),roughness:0.38,metalness:0,side:THREE.DoubleSide,
+      clippingPlanes:clip,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1});
+    return mats[c];
+  }
+  const geos={};
+  function geo(part,cc){
+    const k=part+'|'+cc;
+    if(!geos[k]){ const g=new THREE.BufferGeometry();
+      g.setAttribute('position',new THREE.Float32BufferAttribute(parts[part].tris[cc],3)); g.computeVertexNormals(); geos[k]=g; }
+    return geos[k];
+  }
+  const mtx=m=>new THREE.Matrix4().set(m[3],m[4],m[5],m[0], m[6],m[7],m[8],m[1], m[9],m[10],m[11],m[2], 0,0,0,1);
+
+  // one instanced mesh per (part, piece colour, sub-colour); pieces are already in build order
+  const groups={};
+  pieces.forEach(p=>{ const k=p.part+'|'+p.color; (groups[k]=groups[k]||{part:p.part,color:p.color,list:[]}).list.push(p); });
+  const meshes=[];
+  Object.values(groups).forEach(g=>{
+    Object.keys(parts[g.part].tris).forEach(cc=>{
+      const c=cc==='16'?g.color:+cc;
+      const im=new THREE.InstancedMesh(geo(g.part,cc),mat(c),g.list.length);
+      g.list.forEach((p,i)=>im.setMatrixAt(i,mtx(p.m)));
+      im.castShadow=true; im.receiveShadow=true;
+      im.userData.steps=g.list.map(p=>p.step);
+      model.add(im); meshes.push(im);
+    });
+  });
+
+  // part outlines, merged into one buffer in build order
+  const ePos=[], eCol=[], eEnd=[]; const v=new THREE.Vector3();
+  pieces.forEach(p=>{
+    const M=mtx(p.m), e=parts[p.part].edges, ec=new THREE.Color(colors[p.color]?colors[p.color].edge:'#333333').convertSRGBToLinear();
+    for(let i=0;i<e.length;i+=3){ v.set(e[i],e[i+1],e[i+2]).applyMatrix4(M); ePos.push(v.x,v.y,v.z); eCol.push(ec.r,ec.g,ec.b); }
+    eEnd.push(ePos.length/3);
+  });
+  const eg=new THREE.BufferGeometry();
+  eg.setAttribute('position',new THREE.Float32BufferAttribute(ePos,3));
+  eg.setAttribute('color',new THREE.Float32BufferAttribute(eCol,3));
+  const edges=new THREE.LineSegments(eg,new THREE.LineBasicMaterial({vertexColors:true,clippingPlanes:clip,transparent:true,opacity:0.55}));
+  model.add(edges);
+
+  // centre the model on the origin, feet on the floor
+  model.updateMatrixWorld(true);
+  const box=new THREE.Box3().setFromObject(model), size=box.getSize(new THREE.Vector3()), ctr=box.getCenter(new THREE.Vector3());
+  model.position.set(-ctr.x,-box.min.y,-ctr.z);
+  const H=size.y, R=Math.max(size.x,size.y,size.z);
+  key.position.set(-R*1.2,R*2,-R*1.4); key.target.position.set(0,H/2,0); scene.add(key.target);
+  Object.assign(key.shadow.camera,{left:-R,right:R,top:R,bottom:-R,near:1,far:R*6}); key.shadow.camera.updateProjectionMatrix();
+  fill.position.set(R*1.5,R*0.6,R);
+  const floor=new THREE.Mesh(new THREE.CircleGeometry(R*1.4,64),new THREE.ShadowMaterial({opacity:0.18}));
+  floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
+
+  const controls=new THREE.OrbitControls(camera,renderer.domElement);
+  controls.enableDamping=true; controls.dampingFactor=0.08;
+  controls.minDistance=R*0.6; controls.maxDistance=R*8; controls.maxPolarAngle=Math.PI*0.92;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  controls.autoRotateSpeed=1.6;
+  function setSpin(on){ controls.autoRotate=on; spinBtn.setAttribute('aria-pressed',String(on)); }
+  setSpin(!reduce);
+  function home(){ controls.target.set(0,H*0.48,0); camera.position.set(-R*0.95,H*0.85,-R*2.1); controls.update(); }
+  home();
+  controls.addEventListener('start',()=>setSpin(false));
+
+  function showStep(n){
+    meshes.forEach(m=>{ let c=0; const s=m.userData.steps; while(c<s.length&&s[c]<n) c++; m.count=c; });
+    const shown=pieces.filter(p=>p.step<n).length;
+    edges.geometry.setDrawRange(0,shown?eEnd[shown-1]:0);
+    stepOut.textContent=`Step ${n} of ${maxStep} · ${shown} pcs`;
+  }
+  stepIn.addEventListener('input',()=>showStep(+stepIn.value));
+  showStep(maxStep);
+  spinBtn.addEventListener('click',()=>setSpin(!controls.autoRotate));
+  cutBtn.addEventListener('click',()=>{ const on=!clip.length; clip.length=0; if(on) clip.push(cutPlane);
+    Object.values(mats).forEach(m=>m.needsUpdate=true); edges.material.needsUpdate=true; cutBtn.setAttribute('aria-pressed',String(on)); });
+  resetBtn.addEventListener('click',()=>{ home(); });
+
+  function applyTheme(){ const bg=getComputedStyle(stage).backgroundColor; renderer.setClearColor(new THREE.Color(bg),1); }
+  applyTheme();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);
+  new MutationObserver(applyTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+  function resize(){ const w=stage.clientWidth,h=stage.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+  new ResizeObserver(resize).observe(stage); resize();
+  status.hidden=true;
+  (function loop(){ controls.update(); renderer.render(scene,camera); requestAnimationFrame(loop); })();
+})();
+</script>

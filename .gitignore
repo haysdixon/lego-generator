@@ -1,0 +1,7 @@
+data/
+ldraw/
+out/
+_runs/
+generator/partcache.json
+__pycache__/
+*.pyc
