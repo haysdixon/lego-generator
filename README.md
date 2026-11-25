@@ -2,6 +2,8 @@
 
 **Build new LEGO models from the parts of a set you already own.**
 
+Never programmed before? Start with **[MAKING_SHAPES.md](MAKING_SHAPES.md)**.
+
 You describe an animal (or anything) as a rough 3D shape. The generator then works out how to build it using *only* the bricks in one LEGO set, and writes:
 
 - an LDraw model (`.ldr`) you can open in [LeoCAD](https://www.leocad.org) or [BrickLink Studio](https://www.bricklink.com/v3/studio/download.page)
@@ -83,28 +85,18 @@ python generator/find_sets.py shape shapes/pig.py --minyear 2024 --top 20
 
 This ranks LEGO sets by whether their parts can cover the shape in the right colours.
 
-## Write your own shape
+## Make your own model
 
-A shape file is a short Python file. Each one sets four things on a grid of cells (1 stud wide, 1 plate tall):
+**New to this? Read [MAKING_SHAPES.md](MAKING_SHAPES.md).** It's a step-by-step guide for non-programmers with three ways to go:
+1. Fill in the numbers in a ready-made animal template ([shapes/my_animal.py](shapes/my_animal.py)).
+2. Ask an AI chatbot, using a prompt you copy and paste.
+3. Let an AI coding tool do everything. [AGENTS.md](AGENTS.md) tells it how.
 
-- `solid`: which cells are filled.
-- `col`: each cell's colour.
-- `KEYC`: the colours that matter most.
-- `TITLE`: the model's name.
+Preview a shape in seconds before building it:
 
-Helpers make the shapes:
-
-- `ell(centre, radii)` for a ball.
-- `sell(centre, radii, p)` for a rounded box.
-- `box(lo, hi)` for a box.
-- `studs(n)` and `snap(v)` to line features up with whole studs.
-
-Units are LDraw units before scaling: 20 = one stud, 8 = one plate. The front is −Z and Y points up. Copy [shapes/pig.py](shapes/pig.py) to get started.
-
-Tips from building these:
-- Features thinner than about 2 studs tend to disappear.
-- For brick-only sets, make features whole bricks tall: `B = 24 / SC` is one brick in shape units.
-- Anything that has to stay attached, like ears, horns or eyes, needs bricks above or below it to click into. Otherwise the generator removes it as a loose piece.
+```
+python preview_shape.py shapes/my_animal.py --bricks-only
+```
 
 ## How it works
 

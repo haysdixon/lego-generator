@@ -5,3 +5,4 @@ _runs/
 generator/partcache.json
 __pycache__/
 *.pyc
+shapes/*_preview.png
